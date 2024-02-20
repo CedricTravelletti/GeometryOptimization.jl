@@ -7,6 +7,13 @@
 export update_positions, update_not_clamped_positions, clamp_atoms
 
 
+# TODO: There is something broken in Unitful.jl that makes vectors of unitful 
+# quantities have type Vector{Quantity{Float64}}.
+# Remove this when Unitful.jl is fixed.
+function restore_vector_type(v)
+    convert(Vector{typeof(v[1])}, v)
+end
+
 @doc raw"""
 Creates a new system based on ``system`` but with atoms positions updated 
 to the ones provided. Can also update lattice vectors if `bounding_box` is provided.
@@ -14,22 +21,27 @@ to the ones provided. Can also update lattice vectors if `bounding_box` is provi
 """
 function update_positions(system, positions::AbstractVector{<:AbstractVector{<:Unitful.Length}};
                           bounding_box=bounding_box(system))
-    particles = [Atom(atom; position) for (atom, position) in zip(system, positions)]
+    particles = [Atom(atom; 
+                      position = restore_vector_type(position)) for (atom, position) in zip(system, positions)]
     AbstractSystem(system; particles, bounding_box)
 end
 
 @doc raw"""
 Creates a new system based on ``system`` but with atoms positions 
 updated to the ones provided and lattice vectors deformed according 
-to the provided strain.
+to the provided strain (in Voigt notation).
 New generalized coordinates should be provided in a ComponentArray with 
 component `atoms` and `strain`.
 
+Atomic positions are first updated to the provided one in the unstrained 
+cell and then the provided strain is applied to the new positions.
+
 """
 function update_positions(system, positions::ComponentVector)
-    deformation_tensor = I + voigt_to_full(austrip.(positions.strain))
+    deformation_tensor = I + voigt_to_full(positions.strain)
     # TODO: Do we want to apply the strain to the atoms too?
-    particles = [Atom(atom; position = deformation_tensor * position) for (atom, position)
+    particles = [Atom(atom;
+                      position = restore_vector_type(deformation_tensor * position)) for (atom, position)
                  in zip(system, collect.(positions.atoms))]
 
     bbox = eachcol(deformation_tensor * bbox_to_matrix(bounding_box(system)))
@@ -43,8 +55,7 @@ updated to the ones provided (in the order in which they appear in the system).
 function update_not_clamped_positions(system, positions::AbstractVector{<:Unitful.Length})
     mask = not_clamped_mask(system)
     new_positions = deepcopy(position(system))
-    new_positions[mask] = reinterpret(reshape, SVector{3, eltype(positions)},
-                                      reshape(positions, 3, :))
+    new_positions[mask] = eachcol(reshape(positions, 3, :))
     update_positions(system, new_positions)
 end
 
@@ -58,9 +69,7 @@ coordinates and that the `strain` component should be a 6-vector.
 function update_not_clamped_positions(system, positions::ComponentVector)
     mask = not_clamped_mask(system)
     new_positions = deepcopy(position(system))
-    atoms_positions = collect(positions.atoms)
-    new_positions[mask] = reinterpret(reshape, SVector{3, eltype(atoms_positions)},
-                                      reshape(atoms_positions, 3, :))
+    new_positions[mask] = eachcol(reshape(positions.atoms, 3, :))
     update_positions(system, ComponentVector(; atoms=new_positions, positions.strain))
 end
 
