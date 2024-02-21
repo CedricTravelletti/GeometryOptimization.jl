@@ -22,7 +22,7 @@ system = clamp_atoms(system, [1])
 model_kwargs = (; functionals = [:lda_x, :lda_c_pw])
 basis_kwargs = (; kgrid = [1, 1, 1], Ecut = 10.0)
 scf_kwargs = (; tol = 1e-7)
-calculator = DFTKCalculator(system; model_kwargs, basis_kwargs, scf_kwargs)
+calculator = DFTKCalculator(; model_kwargs, basis_kwargs, scf_kwargs, verbose=true)
 
 solver = OptimizationOptimJL.LBFGS()
 optim_options = (f_tol=1e-32, iterations=20, show_trace=true)
