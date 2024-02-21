@@ -38,7 +38,9 @@ cell and then the provided strain is applied to the new positions.
 
 """
 function update_positions(system, positions::ComponentVector)
-    deformation_tensor = I + voigt_to_full(positions.strain)
+    # Compatibility with Optimization.jl (which is not able to handle units), 
+    # requires us to artificially attach units to strain upstream. We here remove them.
+    deformation_tensor = I + voigt_to_full(austrip.(positions.strain))
     # TODO: Do we want to apply the strain to the atoms too?
     particles = [Atom(atom;
                       position = restore_vector_type(deformation_tensor * position)) for (atom, position)
