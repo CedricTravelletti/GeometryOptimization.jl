@@ -1,4 +1,3 @@
-export apply_voigt_strain, compute_voigt_strain
 
 function voigt_to_full(v)
 	[v[1] .5*v[6] .5*v[5];
