@@ -72,5 +72,9 @@ function minimize_energy!(system, calculator; pressure=0.0, procedure="relax",
     end
     f_opt = OptimizationFunction(system, calculator; pressure)
     problem = OptimizationProblem(f_opt, x0, nothing)  # Last argument needed in Optimization.jl.
-    solve(problem, solver; kwargs...)
+    optimization_data = solve(problem, solver; kwargs...)
+
+    # Return final structure.
+    optimized_system = update_not_clamped_positions(system, optimization_data.u * u"bohr")
+    (; optimized_system, optimization_data)
 end
