@@ -19,8 +19,8 @@ particles = map(data) do atom
 end
 system = AbstractSystem(data; particles)
 
-solver = OptimizationOptimJL.LBFGS()
+optimizer = OptimizationOptimJL.LBFGS()
 optim_options = (f_tol=1e-8, g_tol=1e-8, iterations=10, show_trace=true)
 
-results = minimize_energy!(system, lj; solver, optim_options...)
+results = minimize_energy!(system, lj; optimizer, optim_options...)
 println(results)

@@ -32,8 +32,9 @@ function update_positions(system, positions::ComponentVector)
     # Compatibility with Optimization.jl (which is not able to handle units), 
     # requires us to artificially attach units to strain upstream. We here remove them.
     deformation_tensor = I + voigt_to_full(austrip.(positions.strain))
-    # TODO: Do we want to apply the strain to the atoms too?
-    particles = [Atom(atom; position = deformation_tensor * position) for (atom, position)
+    
+    # auconvert needed here since multiplication drops the type of the array (elements still typed)
+    particles = [Atom(atom; position = auconvert.(deformation_tensor * position)) for (atom, position)
                  in zip(system, collect.(positions.atoms))]
 
     bbox = eachcol(deformation_tensor * bbox_to_matrix(bounding_box(system)))

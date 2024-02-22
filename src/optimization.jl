@@ -19,7 +19,7 @@ By default we work in cartesian coordinates.
 Note that internally, when optimizing the cartesian positions, atomic units 
 are used.
 """
-function Optimization.OptimizationFunction(system, calculator; pressure=0.0, kwargs...)
+function Optimization.OptimizationFunction(system, calculator; kwargs...)
     mask = not_clamped_mask(system)  # mask is assumed not to change during optim.
 
     # TODO: Note that this function will dispatch appropriately when called with 
@@ -60,19 +60,33 @@ function Optimization.OptimizationFunction(system, calculator; pressure=0.0, kwa
     OptimizationFunction(f; grad=g!)
 end
 
-function minimize_energy!(system, calculator; pressure=0.0, procedure="relax", 
-                          solver=Optim.LBFGS(), kwargs...)
+@doc raw"""
+    minimize_energy!(system, calculator; [relaxation, optimizer])
+
+Minimize the system's energy with respect to it's internal degrees of freedom 
+(geometry optimization). Degrees of freedom can be either the atomic coordinates 
+only, or the atomic coordinates together with the unit cell vectors.
+
+Keyword arguments:
+- `relaxation`: Defines if only atoms or atoms and unit cell vectors are optimized.
+                Must be one of `["atoms", "unit_cell"]`.
+- `optimizer`: Optimizer to use. Use one from Optimization.jl. Defaults to LBFGS.
+
+Returns a named tuple (; optimized_system, optimization_data).
+
+"""
+function minimize_energy!(system, calculator; relaxation="atoms", optimizer=Optim.LBFGS(), kwargs...)
     # Use current system parameters as starting positions.
-    if procedure == "relax"
+    if relaxation == "atoms"
         x0 = austrip.(not_clamped_positions(system))
-    elseif procedure == "vc_relax"
+    elseif relaxation == "unit_cell"
         x0 = ComponentVector(atoms = austrip.(reduce(vcat, position(system))), strain = zeros(6))
     else
-        print("Error: unknown optimization procedure. Please use one of [`relax`, `vc_relax`].")
+        print("Error: unknown relaxation type. Please use one of [`atoms`, `unit_cell`].")
     end
-    f_opt = OptimizationFunction(system, calculator; pressure)
+    f_opt = OptimizationFunction(system, calculator)
     problem = OptimizationProblem(f_opt, x0, nothing)  # Last argument needed in Optimization.jl.
-    optimization_data = solve(problem, solver; kwargs...)
+    optimization_data = solve(problem, optimizer; kwargs...)
 
     # Return final structure.
     optimized_system = update_not_clamped_positions(system, optimization_data.u * u"bohr")

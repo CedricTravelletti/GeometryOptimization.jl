@@ -24,9 +24,9 @@ basis_kwargs = (; kgrid = [1, 1, 1], Ecut = 10.0)
 scf_kwargs = (; tol = 1e-7)
 calculator = DFTKCalculator(; model_kwargs, basis_kwargs, scf_kwargs, verbose=true)
 
-solver = OptimizationOptimJL.LBFGS()
+optimizermizationOptimJL.LBFGS()
 optim_options = (f_tol=1e-32, iterations=20, show_trace=true)
 
-results = minimize_energy!(system, calculator; solver=solver, optim_options...)
+results = minimize_energy!(system, calculator; optimizer, optim_options...)
 println(results)
 @printf "Bond length: %3f bohrs.\n" norm(results.minimizer[1:end])

@@ -43,4 +43,4 @@ scf_kwargs = (; tol = 1e-3)
 calculator = DFTKCalculator(; model_kwargs, basis_kwargs, scf_kwargs, verbose=true)
 
 optim_options = (f_tol=1e-6, iterations=6, show_trace=true)
-results = minimize_energy!(al_supercell, calculator; procedure="vc_relax", optim_options...)
+results = minimize_energy!(al_supercell, calculator; relaxation="unit_cell", optim_options...)
