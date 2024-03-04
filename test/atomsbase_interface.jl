@@ -25,8 +25,8 @@
     new_general_pos = ComponentVector(atoms = new_positions, strain = strain)
     new_system = update_positions(silicon_supercell, new_general_pos)
     
-    @test position(new_system) == new_positions
-    @test bounding_box(new_system) == bounding_box(silicon_supercell)
+    @test [austrip.(x) for x in position(new_system)] == [austrip.(x) for x in new_positions]
+    @test [austrip.(x) for x in bounding_box(new_system)] == [austrip.(x) for x in bounding_box(silicon_supercell)]
 end
 
 @testitem "AtomsBase interface: check positions+cell updating" setup=[TestCases] begin
@@ -55,8 +55,8 @@ end
     new_general_pos = ComponentVector(atoms = new_positions, strain = strain)
     new_system = update_positions(silicon_supercell, new_general_pos)
     
-    @test position(new_system) == deformed_new_positions
-    @test bounding_box(new_system) == new_lattice
+    @test [austrip.(x) for x in position(new_system)] == [austrip.(x) for x in deformed_new_positions]
+    @test [austrip.(x) for x in bounding_box(new_system)] == [austrip.(x) for x in new_lattice]
 end
 
 @testitem "AtomsBase interface: check positions+cell updating (with mask)" setup=[TestCases] begin
@@ -88,6 +88,6 @@ end
                                       strain = strain)
     new_system = update_not_clamped_positions(silicon_supercell, new_general_pos)
     
-    @test position(new_system) == deformed_new_positions
-    @test bounding_box(new_system) == new_lattice
+    @test [austrip.(x) for x in position(new_system)] == [austrip.(x) for x in deformed_new_positions]
+    @test [austrip.(x) for x in bounding_box(new_system)] == [austrip.(x) for x in new_lattice]
 end

@@ -19,5 +19,5 @@
     optim_options = (f_tol=1e-6, iterations=4, show_trace=false)
     
     results = minimize_energy!(system, calculator; optimizer, optim_options...)
-    @test isapprox(results.u[1], 0; atol=1e-5)
+    @test isapprox(results.optimization_data.u[1], 0; atol=1e-5)
 end
