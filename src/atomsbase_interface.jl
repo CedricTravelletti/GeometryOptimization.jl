@@ -11,7 +11,7 @@ Creates a new system based on ``system`` but with atoms positions updated
 to the ones provided. Can also update lattice vectors if `bounding_box` is provided.
 
 """
-function update_positions(system, positions::AbstractVector{<:AbstractVector{<:Unitful.Length}};
+function update_positions(system, positions;
                           bounding_box=bounding_box(system))
     particles = [Atom(atom; position) for (atom, position) in zip(system, positions)]
     AbstractSystem(system; particles, bounding_box)
@@ -46,7 +46,7 @@ end
 Creates a new system based on ``system`` where the non clamped positions are
 updated to the ones provided (in the order in which they appear in the system).
 """
-function update_not_clamped_positions(system, positions::AbstractVector{<:Unitful.Length})
+function update_not_clamped_positions(system, positions)
     mask = not_clamped_mask(system)
     new_positions = deepcopy(position(system))
     new_positions[mask] = eachcol(reshape(positions, 3, :))
