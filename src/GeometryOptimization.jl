@@ -13,6 +13,9 @@ using ComponentArrays
 export update_positions, update_not_clamped_positions, clamp_atoms
 include("atomsbase_interface.jl")
 
+export update_positions
+include("dftk_differentiable_interface.jl")
+
 export apply_voigt_strain, compute_voigt_strain
 include("strain.jl")
 
