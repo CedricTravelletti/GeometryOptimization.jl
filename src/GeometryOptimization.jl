@@ -25,8 +25,10 @@ $(DOCSTRING)
 include("clamping_updating_positions.jl")
 include("optimization.jl")
 include("callbacks.jl")
+include("strain_utils.jl")
 
 export minimize_energy!
 export GeoOptDefaultCallback
+export voigt_to_full, full_to_voigt, bbox_to_matrix, matrix_to_bbox, compute_voigt_strain
 
 end
